@@ -11,11 +11,11 @@ jobs:
     steps:
       - checkout
       - run: mkdir -p $TEST_RESULTS
+      - run: go get github.com/jstemmer/go-junit-report
+      - run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.23.1
       - restore_cache:
           keys:
-            - v3-pkg-cache
-      - run: go get github.com/jstemmer/go-junit-report
-      - run: go get github.com/golangci/golangci-lint/cmd/golangci-lint
+            - v3-pkg-cache-{{ checksum "go.mod" }}
       - run:
           name: Run tests
           command: |
@@ -35,10 +35,10 @@ jobs:
           name: Check nothing has changed after lint
           command: git diff --exit-code
       - save_cache:
-          key: v3-pkg-cache
+          key: v3-pkg-cache-{{ checksum "go.sum" }}
           paths:
-            - /go/pkg
-            - ~/.cache/go-build
+            - /go/pkg/mod/
+            - ~/.cache/go-build/
 workflows:
   version: 2
   workflow:
